@@ -1,14 +1,22 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+
 /**
  * Konigsberg Bridge Problem with Euler’s condition
  * ------------------------------------------------
+ * In the city of Konigsberg (now kaliningrad, Russia), the river pregel divided the city into four distinct landmasses.
+ *
  * Vertices (landmasses):
  *   0 = North Bank
  *   1 = South Bank
  *   2 = Kneiphof Island
  *   3 = East Island
+ *
+ * These landmasses were connected by seven bridges, some of which connected the same pair of landmasses more than once.
+ *
+ * PROBLEM
+ * Is it possible to start on one landmass and take a walk that crosses each of the seven bridegs exactly once, without swimming or reusing any bridge?
  *
  * Bridges are undirected edges. We check degrees and determine:
  *   - Eulerian circuit (0 odd degrees)
@@ -17,22 +25,44 @@ using namespace std;
  */
 
 struct Edge {
-    int to;
-    int id;
-    bool used;
+    int to;      // Where the edge goes (neighbor)
+    int id;      // Unique id for this bridge
+    bool used;   // Have we walked this bridge already?
 };
 
 class Graph {
-    int V;
-    vector<vector<Edge>> adj;
+    int V;                     // number of vertices (landmasses)
+    vector<vector<Edge>> adj;  // Adjacency list
 
 public:
     Graph(int V) : V(V), adj(V) {}
+
+
+   /**
+    *
+    *   ADD BRIDGES
+    *   
+    *   for bridge `u-v` adding an entry in both directions.
+    *   Example: Bridge between North Bank (0) and Island (2):
+    *   - adj[0] gets {to=2, id=0, used=false}
+    *   - adj[2] gets {to=0, id=0, used=false}
+    *
+    */
+
 
     void addBridge(int u, int v, int id) {
         adj[u].push_back({v, id, false});
         adj[v].push_back({u, id, false});
     }
+
+
+    /**
+     *
+     * GET DEGRESS
+     *
+     * The degree of landmass = number of bridges touching it
+     *
+     */
 
     vector<int> getDegrees() {
         vector<int> deg(V);
@@ -40,7 +70,15 @@ public:
         return deg;
     }
 
-    // Count odd degree vertices
+
+    /**
+     *
+     * ODD DEGREE VERTICES
+     *
+     * Collects all vertices that have odd number of bridges
+     * 
+     */
+
     vector<int> getOddVertices() {
         vector<int> odd;
         for (int i = 0; i < V; i++) {
@@ -49,10 +87,24 @@ public:
         return odd;
     }
 
-    // Hierholzer’s algorithm for Eulerian path/circuit
+    /** Hierholzer’s algorithm for Eulerian path/circuit
+     *
+     *  ALGORITHM
+     *  - Look at top of stack = current place u.
+     *  - If u still has an unused bridge.
+     *    - Mark it used on both sides.
+     *    - Walk across -> push neighbor on stack.
+     *  - If u has no unsed bridges left:
+     *    - Add u to the trail.
+     *    - Pop it from stack.
+     *  
+     * All the end, path has all vertices in reverse order -> so reverse it.
+     *
+     */
+
     vector<int> eulerianTrail(int start) {
-        vector<int> path;
-        stack<int> st;
+        vector<int> path;    // Will contain the final trail
+        stack<int> st;       // Where we are walking
         st.push(start);
 
         while (!st.empty()) {
@@ -142,4 +194,20 @@ int main() {
 
     return 0;
 }
+
+
+
+/**
+ *
+ *  REFERENCES
+ *
+ *  - https://tomrocksmaths.com/wp-content/uploads/2024/07/the-konigsberg-bridge-problem-and-graph-theory-1-beatrice-lawrence.pdf
+ *  - https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg
+ *  - https://www.cs.kent.edu/~dragan/ST-Spring2016/The%20Seven%20Bridges%20of%20Konigsberg-Euler%27s%20solution.pdf
+ *  - https://youtu.be/WWhGcwlCoXE?feature=shared33
+ *  - https://www.cs.cornell.edu/courses/cs280/2006sp/280wk13.pdf
+ *  - https://www.youtube.com/watch?v=GNr98tA1TaA
+ *
+ */
+
 
